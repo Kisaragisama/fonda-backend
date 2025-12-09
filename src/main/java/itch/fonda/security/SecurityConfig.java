@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
@@ -26,19 +25,14 @@ public class SecurityConfig {
         http.cors(cors -> {});
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+        // ✅ Permitir TODO sin autenticación
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/test").permitAll()
-
-                .requestMatchers("/api/productos/**").hasAnyRole("ADMIN", "SUPERVISOR")
-                .requestMatchers("/api/tipos/**").hasAnyRole("ADMIN", "SUPERVISOR")
-
-                .requestMatchers("/ventas/**", "/detalles-venta/**")
-                    .hasAnyRole("ADMIN", "CAJERO", "MESERO")
-
-                .anyRequest().hasRole("ADMIN")
+                .anyRequest().permitAll()
         );
 
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        // ✅ Desactivar filtro JWT
+        // http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 
@@ -46,7 +40,13 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+
+        // ✅ Agregar tu frontend de Vercel
+        config.setAllowedOrigins(List.of(
+                "http://localhost:3000",
+                "https://front-end-nine-mauve.vercel.app"
+        ));
+
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
